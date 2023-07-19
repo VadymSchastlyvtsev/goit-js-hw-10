@@ -15,94 +15,89 @@ catInfo: document.querySelector(".cat-info"),
 
   const {loader, error, catInfo, loaderText, select} = selectors;
 
+  function showLoader(showMessage) {
+    if(showMessage === 'startSelect') {
+      select.style.display = 'block';
+      loader.style.display = 'none';
+      loaderText.style.display = 'none';
+      error.style.display = 'none';
+    }
+    if(showMessage === 'showError') {
+      select.style.display = 'none';
+      loader.style.display = 'none';
+      loaderText.style.display = 'none';
+      error.style.display = 'block';
+    }
+    if(showMessage === 'showSearch') {
+      loader.style.display = 'none';
+      loaderText.style.display = 'none';
+      catInfo.style.display = 'block';
+    }
+    if(showMessage === 'startLoader') {
+      loader.style.display = 'inline-block';
+      loaderText.style.display = 'block';
+      catInfo.style.display = 'none';
+    }
+  };
+
+   function createMarkup(arr) {
+    return arr
+    .map(({id, name }) => `<option value="${id}">${name}</option>`)
+    .join('')
+};
+
+    function createMarcupCat(arr) {
+    return arr
+      .map(
+        ({ breeds: [{ name, description, temperament }], url }) =>
+          `<div class="cat-info-img">
+                <img src="${url}" alt="${name}" width="500"/>
+           </div>
+           <div class="cat-info-descr">
+                <h2 class="cat-info-title">${name}</h2>
+                <p class="cat-info-text">${description}</p>
+                <p class="cat-info-temperament"><span>Temperament: </span>${temperament}</p>
+           </div>`
+      )
+      .join('');
+  };
+
 
   fetchBreeds()
   .then(data => {
     select.innerHTML = createMarkup(data);
-    showLoader('endStartInit');
+    showLoader('startSelect');
   })
-  .catch(() => {
-    messageError();
+  .catch((err) => {
+    console.log(err);;
   });
-  // fetchBreeds()
-  // .then(data => {
-  //   console.dir(data);
-  //   // select.innerHTML = createMarkup(data);
-  // })
-  // .catch(() => {
-  //   showError();
-  // })
-//   .finally(() => {
-//     hideLoader();
-//   });
 
+  select.addEventListener('change', onChange);
 
-//  function createMarkup(arr) {
-//     return arr
-//     .map(({id, name }) => `<option value="${id}">${name}</option>`)
-//     .join('')
-// };
+  function onChange(event) {
+    showLoader('startLoader');
 
+    const id = event.currentTarget.value;
 
-//   function createMarkupCat(arr) {
-//     return arr
-//       .map(
-//         ({ breeds: [{ name, description, temperament }], url }) =>
-//           `<div class="cat-info-img">
-//                 <img src="${url}" alt="${name}" width="500"/>
-//            </div>
-//            <div class="cat-info-descr">
-//                 <h2 class="cat-info-title">${name}</h2>
-//                 <p class="cat-info-text">${description}</p>
-//                 <p class="cat-info-temperament"><span>Temperament: </span>${temperament}</p>
-//            </div>`
-//       )
-//       .join('');
-//   };
+    fetchCatByBreed(id)
+      .then(data => {
+        catInfo.innerHTML = '';
+        if(!data.length) {
+        throw new Error('Oops! Something went wrong! Choose another cat please!');
+        };
 
- 
+        catInfo.innerHTML = createMarcupCat(data);
+        showLoader('showSearch');
+      })
+      .catch(err => {
+        messageError(err.message);
+        showLoader('showSearch');
+      });
 
+    }
+  
+  function messageError(err) {
+Notiflix.Notify.failure(err);
+  };
 
-
-// select.addEventListener('change', onChange);
-
-// function onChange(evt) {
-//     showLoader()
-//     hideError();
-//     const id = evt.currentTarget.value;
-
-//     fetchCatByBreed(id)
-//     .then(data => {
-//         if (!data.lendth) {
-//             showError()
-//         }
-//         catInfo.innerHTML = createMarkupCat(data);
-//         showLoader();
-//     })
-//     .catch(() => {
-//         showError();
-//     })
-// };
-
-
-function showError() {
-  Notiflix.Notify.failure('Oops! Something went wrong! Try reloading the page!');
-}
-
-function hideError() {
-  error.style.display = "none";
-};
-
-function hideLoader() {
-  select.style.display = "block";
-  loader.style.display = "none";
-  loaderText.style.display = "none";
-};
-
-function showLoader() {
-  showLoader();
-};
-
-Notiflix.Notify.init();
-
-export {showError}
+export {showLoader}

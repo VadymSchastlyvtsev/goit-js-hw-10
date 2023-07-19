@@ -1,5 +1,5 @@
 import axios from "axios";
-import { showError } from "../index";
+import { showLoader } from "../index";
 
 axios.defaults.baseURL = "https://api.thecatapi.com/v1";
 axios.defaults.headers.common['x-api-key'] =
@@ -11,24 +11,18 @@ axios.defaults.headers.common['x-api-key'] =
       const resp = await axios.get('/breeds');
       return resp.data;
     } catch (error) {
-      showError('Oops! Something went wrong! Try reloading the page!')
+      showLoader('showError');
     }
-    // return axios.get('/breeds').then(resp => {
-    //   if (!resp.ok) {
-    //     throw new Error(resp.statusText);
-    //   }
-    //   return resp.data;
-    // });
+    
   }
 
-  function fetchCatByBreed(breedId) {
-    return axios.get(`/images/search?breed_ids=${breedId}`).then(resp => {
-      if (!resp.ok) {
-        throw new Error(resp.statusText);
-      }
+  async function fetchCatByBreed(breedId) {
+    try {
+      const resp = await axios.get(`/images/search?breed_ids=${breedId}`);
       return resp.data;
-    });
+    } catch (error) {
+      showLoader('showError');
+    }
   }
-
 
 export { fetchBreeds, fetchCatByBreed };
